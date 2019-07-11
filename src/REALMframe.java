@@ -321,6 +321,14 @@ private final ScriptInterface gui_;
 	    // Aberration correction tab
 	    abcorstart_.addActionListener(new java.awt.event.ActionListener() {
 	         public void actionPerformed(java.awt.event.ActionEvent evt) {
+		 	 // Stop current acquisition
+	        	 try {
+	        		core_.stopSequenceAcquisition();
+			 } catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			 }
+				 
 	        	 abcorstart_.setEnabled(false);
 	        	 abcorstop_.setEnabled(true);
 	        	 abcorresults_.AOstopflag = false;
