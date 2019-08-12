@@ -6,9 +6,9 @@ public class ZernikeModes {
 	
 	public double[][] getzernike(int n, int m){
 		if (Math.abs(m) > n)
-			throw new IllegalStateException("Zernike mode does not excist");
+			throw new IllegalStateException("Zernike mode does not exists");
 		if (Math.abs(m) % 2 != n % 2) 
-			throw new IllegalStateException("Zernike mode does not excist");
+			throw new IllegalStateException("Zernike mode does not exists");
 				
 		double[][] zernike = new double[size][size];
 		double num;
