@@ -17,7 +17,8 @@ REALM is installed in 4 easy steps.
   3.	Copy the latest version REALM-X.jar from the dist-folder to the mmplugins folder.
   4.	Start Micro-Manager and check that Micro-Manager recognizes the plugin. REALM can be found under ‘Plugins’. REALM is now installed.
   <div align="center">
-  ![Alt text](/img/PluginTab.PNG?raw=true)
-  </div>
+    <img src="/img/PluginTab.PNG" width="400px"</img> 
+</div>
+
   
   
