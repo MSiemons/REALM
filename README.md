@@ -15,10 +15,8 @@ REALm is installed in 4 easy steps.
   2.	Create a folder name “REALM” in the Micro-Manager installation folder, extract the zip-file and copy all files to this folder.
   ![Alt text](/img/REALMfolder.png?raw=true)
   3.	Copy the latest version REALM-X.jar from the dist-folder to the mmplugins folder.
-  4.	Start Micro-Manager and check that Micro-Manager recognizes the plugin. REALM can be found under ‘Plugins’. 
-REALM is now installed.
- ![Alt text](/img/PluginTab.png?raw=true)
-
-
-
-
+  4.	Start Micro-Manager and check that Micro-Manager recognizes the plugin. REALM can be found under ‘Plugins’. REALM is now installed.
+  
+  
+  
+  
