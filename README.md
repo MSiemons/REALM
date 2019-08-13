@@ -20,5 +20,8 @@ REALM is installed in 4 easy steps.
     <img src="/img/PluginTab.PNG" width="600px"</img> 
 </div>
 
-  
+## The REALM GUI
+The GUI of REALM features a nice big START button and provides acces to the aberration correction parameters in the settings tab.
+
+
   
