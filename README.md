@@ -10,12 +10,15 @@ REALM provides an user-friendly interface to allow users to perform SMLM or othe
 Currently REALM supports the deformable mirror MIRAO52E from Imagine Optics. Micro-Manager uses device adapters to communicate with devices. You can download the device adapter for MIRAO52E from https://github.com/MSiemons/MIRAO_DeviceAdapter. Here a manual is provided on how to install this device adapter. 
 
 ## Installation
-REALm is easily installed in 4 easy steps. 
+REALm is installed in 4 easy steps. 
   1.	Download the .zip file from the repository https://github.com/MSiemons/REALM.
   2.	Create a folder name “REALM” in the Micro-Manager installation folder, extract the zip-file and copy all files to this folder.
+  ![Alt text](/img/REALMfolder.png?raw=true)
   3.	Copy the latest version REALM-X.jar from the dist-folder to the mmplugins folder.
   4.	Start Micro-Manager and check that Micro-Manager recognizes the plugin. REALM can be found under ‘Plugins’. 
 REALM is now installed.
+ ![Alt text](/img/PluginTab.png?raw=true)
+
 
 
 
