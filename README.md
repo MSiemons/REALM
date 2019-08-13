@@ -30,5 +30,5 @@ The GUI of REALM features a nice big START button and provides acces to the aber
 ## Correction algorithm
 REALM uses model-based optimization to iteratively correct Zernike modes. In brief, each Zernike mode is corrected by applying a sequence of different amounts of biases of the to be corrected Zernike mode. From these acquisitions a metric is computed. Next a Gaussian is fitted through these metric values to find the optimum. This is then performed for all the to be corrected Zernike modes and is repeated for multiple correction rounds.
    <div align="center">
-    <img src="/img/AberrationCorrectionMethod.png" width="600px"</img> 
+    <img src="/img/AberrationCorrectionMethod.png" width="800px"</img> 
 </div>
