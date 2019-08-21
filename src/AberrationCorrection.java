@@ -141,11 +141,7 @@ public class AberrationCorrection {
 								int ind = i + j*params.width;
 								imgtmp2D[i][j] = (float) imgtmp1D[ind];				
 							}
-						}
-
-						this.acqui.setimage(imgtmp2D);
-						imstack.addSlice(this.acqui.getip());
-						Acquisitions.setProcessor(this.acqui.getip());
+						}								
 
 					} else {
 						// In DEMO mode: load dummy images
@@ -176,15 +172,14 @@ public class AberrationCorrection {
 
 						ImagePlus dumim = new ImagePlus(dir + filename);
 						ImageProcessor ip = dumim.getProcessor();
-						imgtmp2D = ip.getFloatArray();
-						this.acqui.setimage(imgtmp2D);
-
-						imstack.addSlice(this.acqui.getip());
-						Acquisitions.setStack("Acquisitions",imstack);
-						Acquisitions.setSlice(imstack.getSize());
-						
+						imgtmp2D = ip.getFloatArray();					
 
 					}
+					
+					this.acqui.setimage(imgtmp2D);
+					imstack.addSlice(this.acqui.getip());
+					Acquisitions.setStack("Acquisitions",imstack);
+					Acquisitions.setSlice(imstack.getSize());
 
 					// Show acquisitions
 					Acquisitions.show();
@@ -318,6 +313,7 @@ public class AberrationCorrection {
 		print_line.printf( "%n");
 		print_line.printf("%s" + "%n", "Aberration correction results");
 		print_line.printf( "%s" + "%n" ,"Wrms [rad]: " + Double.toString(this.EstWrms / params.wavelength * 2 * Math.PI));
+		print_line.printf( "%s" + "%n" ,"Wrms standard error [rad]: " + Double.toString(this.EstWrmserr / params.wavelength * 2 * Math.PI));
 		print_line.printf( "%s" + "%n","Zernike coefficients [rad]");
 		for (int i = 0; i < this.AestStore.length; i ++) {
 			print_line.printf( "%s" ,"Round " + (i +1) + ": ");

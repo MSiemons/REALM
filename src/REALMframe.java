@@ -27,6 +27,8 @@ import mmcorej.CMMCore;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
@@ -106,13 +108,21 @@ implements MMListenerInterface {
 		core_ = gui_.getMMCore(); 
 		prefs_ = Preferences.userNodeForPackage(this.getClass());
 		params_ = new Params(); 
-		
+
+//		try {
+//			prefs_.clear();
+//		} catch (BackingStoreException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+				
 		params_.NA = (float) prefs_.getFloat("NA",(float) 1.35);
 		params_.wavelength = (float) prefs_.getFloat("wavelength",(float) 690);
 		params_.Nrounds = (int) prefs_.getInt("Nrounds",2);
 		params_.Nbiases = (int) prefs_.getInt("Nbiases",13);
 		params_.maxbiasrad = (double) prefs_.getDouble("maxbiasrad",(double) 1.0);
-		params_.Zernlist = (int) prefs_.getInt("Zernlist",1);	
+		params_.Zernlist = (int) prefs_.getInt("Zernlist",1);
+		params_.show = prefs_.getBoolean("showdata", false);
 		params_.alpha = (float) 1.3;
 		params_.update();   
 
@@ -156,7 +166,7 @@ implements MMListenerInterface {
 		applyastig_= new JButton("Apply 60nm astigmatisme");
 		showdatafield_ = new JCheckBox();
 		showdatafield_.setMnemonic(KeyEvent.VK_C); 
-		showdatafield_.setSelected(prefs_.getBoolean("showdata", false));
+		showdatafield_.setSelected(params_.show);
 		demomodefield_ = new JCheckBox();
 		demomodefield_.setMnemonic(KeyEvent.VK_C); 
 		demomodefield_.setSelected(false);
@@ -347,7 +357,7 @@ implements MMListenerInterface {
 						File tempFile = new File(file);
 
 						if (!tempFile.exists()){
-							JOptionPane.showMessageDialog(null,"Cannot find demo files in REALM\\demofiles\\SMimages_ZX_X.tif", "Warning", 
+							JOptionPane.showMessageDialog(null, demofile + "X_X.tif", "Warning", 
 									JOptionPane.PLAIN_MESSAGE);
 							return;
 						}
@@ -500,25 +510,30 @@ implements MMListenerInterface {
 	private void abcorsave_actionperformed(java.awt.event.ActionEvent evt) {
 
 		JFileChooser c = new JFileChooser();
+		c.setSelectedFile(new File(prefs_.get("directory", null) + (File.separatorChar+ "abcordata.txt")));
+	
+//		JOptionPane.showMessageDialog(null, "save file", prefs_.get("directory", System.getProperty("user") + (File.separatorChar + "My Documents")) + (File.separatorChar+ "abcordata.txt"),
+//				JOptionPane.PLAIN_MESSAGE);
+		
+		
+		if (c.showSaveDialog(REALMframe.this) == JFileChooser.APPROVE_OPTION) {
 
-		if (prefs_.get("directory", null) != null)
-			c.setSelectedFile(new File(prefs_.get("directory", "") + "/abcordata.txt"));
-		else
-			c.setSelectedFile(new File("abcordata.txt"));
+//				JOptionPane.showMessageDialog(null, c.getCurrentDirectory().toString() + File.separatorChar + c.getSelectedFile().getName(),"Save file",	JOptionPane.PLAIN_MESSAGE);		
+//				JOptionPane.showMessageDialog(null, (c.getCurrentDirectory().toString() + File.separatorChar + FilenameUtils.removeExtension(c.getSelectedFile().getName()) + ".txt"),"Save file",	JOptionPane.PLAIN_MESSAGE);	
+//			filename_.setText(FilenameUtils.getBaseName(c.getSelectedFile().getName()));
+//			dir_.setText(c.getCurrentDirectory().toString());	    	  
+						
+			String savestring =  new String(c.getCurrentDirectory().toString() + File.separatorChar + c.getSelectedFile().getName());
+			if (!savestring.endsWith(".txt")) {
+				savestring = savestring.concat(".txt");
+			}
+			prefs_.put("directory", c.getCurrentDirectory().toString());	
 
-		int rVal = c.showSaveDialog(REALMframe.this);
-		if (rVal == JFileChooser.APPROVE_OPTION) {
-
-			filename_.setText(FilenameUtils.getBaseName(c.getSelectedFile().getName()));
-			dir_.setText(c.getCurrentDirectory().toString());	    	  
-			prefs_.put("directory", dir_.getText());
-
-			String savestring =  dir_.getText() + "\\" + filename_.getText() + ".txt";
-			System.out.println(savestring);
-			try {
+			try {	
 				abcorresults_.save(savestring, params_);
+				JOptionPane.showMessageDialog(null, savestring,"File saved",	JOptionPane.PLAIN_MESSAGE);	
 			} catch (Exception e) {
-				System.out.println(e.getMessage());
+				JOptionPane.showMessageDialog(null,e.getMessage(), "Error", JOptionPane.PLAIN_MESSAGE);
 			}
 
 		}
@@ -544,18 +559,16 @@ implements MMListenerInterface {
 	
 	private void loadwavefront_actionperformed(java.awt.event.ActionEvent evt){
 		JFileChooser c = new JFileChooser();
-		if (prefs_.get("directory", null) != null)
-			c.setCurrentDirectory(new File(prefs_.get("directory", "")));
+
+		c.setSelectedFile(new File(prefs_.get("directory", null) + (File.separatorChar+ ".wcs")));
 
 		int rVal = c.showOpenDialog(REALMframe.this);
 
 		if (rVal == JFileChooser.APPROVE_OPTION) {
 
-			filename_.setText(c.getSelectedFile().getName());
-			dir_.setText(c.getCurrentDirectory().toString());
-			prefs_.put("directory", dir_.getText());
-
-			String loadstring =  dir_.getText() + "\\" + filename_.getText();
+			String loadstring =  new String(c.getCurrentDirectory().toString() + File.separatorChar + c.getSelectedFile().getName());
+			prefs_.put("directory", c.getCurrentDirectory().toString());
+			
 			System.out.println(loadstring);
 
 			try { 
@@ -568,21 +581,18 @@ implements MMListenerInterface {
 	
 	private void savewavefront_actionperformed(java.awt.event.ActionEvent evt){
 		JFileChooser c = new JFileChooser();		      
-		if (prefs_.get("directory", null) != null)
-			c.setSelectedFile(new File(prefs_.get("directory", "") + "/wfc.wlc"));
-		else
-			c.setSelectedFile(new File("wfc.wlc"));
-
+		c.setSelectedFile(new File(prefs_.get("directory", null) + (File.separatorChar+ "wavefront.wcs")));
 
 		int rVal = c.showSaveDialog(REALMframe.this);
 
 		if (rVal == JFileChooser.APPROVE_OPTION) {
-			filename_.setText(FilenameUtils.getBaseName(c.getSelectedFile().getName()));
-			dir_.setText(c.getCurrentDirectory().toString());
-			prefs_.put("directory", dir_.getText());
 
-			String savestring =  dir_.getText() + "\\" + filename_.getText()  + ".wcs";
-			System.out.println(savestring);
+			String savestring =  c.getCurrentDirectory().toString() + File.separatorChar + c.getSelectedFile().getName();
+			if (!savestring.endsWith(".wcs")) {
+				savestring = savestring.concat(".wcs");
+			}
+			prefs_.put("directory", c.getCurrentDirectory().toString());
+			
 			try { 
 				REALMframe.core_.setProperty("MIRAO52E","Save current position [input filename]", savestring);
 			} catch (Exception e) {

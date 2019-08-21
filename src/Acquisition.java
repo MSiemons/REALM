@@ -284,8 +284,8 @@ public class Acquisition {
 		FloatProcessor metricnum = new FloatProcessor(acqui.metricweight);
 		FloatProcessor metricden = new FloatProcessor(acqui.circmask1NA); 
 
-		ImagePlus metricnumip = new ImagePlus("Metric numerator", metricnum);
-		ImagePlus metricdenip = new ImagePlus("Metric denumerator", metricden);
+		ImagePlus metricnumip = new ImagePlus("MetricNumerator", metricnum);
+		ImagePlus metricdenip = new ImagePlus("MetricDenominator", metricden);
 
 		metricnumip.show();
 		metricdenip.show();

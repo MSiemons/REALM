@@ -1,3 +1,26 @@
+///////////////////////////////////////////////////////////////////////////////
+//FILE:          ZernikeModes.java
+//PROJECT:       REALM
+//-----------------------------------------------------------------------------
+//
+// DISCRIPTON:	 Zernike mode class for REALM. This class computes Zernike modes
+//				 for a size of 512 x 512 pixels.
+//
+// AUTHOR:       Marijn Siemons
+//
+// COPYRIGHT:    Utrecht University 2019
+//
+// LICENSE:      This file is distributed under the GNU GENERAL PUBLIC LICENSE license.
+//               License text is included with the source distribution.
+//
+//               This file is distributed in the hope that it will be useful,
+//               but WITHOUT ANY WARRANTY; without even the implied warranty
+//               of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//
+//               IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+//               CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+//               INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES.
+
 public class ZernikeModes {
 	int size = 512;
 	double[][] rho = new double[size][size];
