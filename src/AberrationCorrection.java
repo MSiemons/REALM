@@ -211,17 +211,17 @@ public class AberrationCorrection {
 				double[] theta = LMfitter.fitGauss(params.biases, this.M, initialParams, lowerbound, upperbound);
 				double[] thetase = LMfitter.getparamSE(params.biases, this.M, theta);
 
-				// Applycorrection
-				if (!params.demomode) {
-					REALMframe.core_.setProperty("MIRAO52E", params.Zernikes[jzern], this.Aest[jzern] / 1000);
-					REALMframe.core_.setProperty("MIRAO52E","ApplyZernikes",1);
-				}
-				
 				// Store results
 				this.Aest[jzern] = theta[2] + this.Aest[jzern];
 				this.AestStore[jround][jzern] =  theta[2];
 				this.Aerr[jzern] = thetase[2];
 				this.AerrStore[jround][jzern] = thetase[2];
+				
+				// Applycorrection
+				if (!params.demomode) {
+					REALMframe.core_.setProperty("MIRAO52E", params.Zernikes[jzern], this.Aest[jzern] / 1000);
+					REALMframe.core_.setProperty("MIRAO52E","ApplyZernikes",1);
+				}
 
 				// Show metric values and fit
 				if (params.show) {
