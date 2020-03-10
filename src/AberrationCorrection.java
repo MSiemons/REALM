@@ -45,6 +45,7 @@ public class AberrationCorrection {
 	public double EstWrmserr;
 	public double EstWrms;
 	public boolean succes;
+	public Params paramstore;
 	volatile boolean AOstopflag;		
 	private Acquisition acqui;
 
@@ -83,7 +84,7 @@ public class AberrationCorrection {
 		boolean startok = true;
 		if (!params.demomode) {
 			for (int jzern = 0; jzern < Nzernikes; jzern ++) {			
-				startok = startok && !(Math.abs( Double.valueOf(REALMframe.core_.getProperty("MIRAO52E", params.Zernikes[jzern])) ) > 0.0001);	
+				startok = startok && !(Math.abs( Double.valueOf(REALMframe.core_.getProperty(params.DMname, params.Zernikes[jzern])) ) > 0.0001);	
 			}
 		}
 		if (!startok) {
@@ -113,8 +114,8 @@ public class AberrationCorrection {
 
 						// Apply bias
 						if (!params.demomode) {
-							REALMframe.core_.setProperty("MIRAO52E", params.Zernikes[jzern], (this.Aest[jzern] + biases[jbias]) / 1000);
-							REALMframe.core_.setProperty("MIRAO52E","ApplyZernikes",1);
+							REALMframe.core_.setProperty(params.DMname, params.Zernikes[jzern], (this.Aest[jzern] + biases[jbias]) / 1000);
+							REALMframe.core_.setProperty(params.DMname,"ApplyZernikes",1);
 						}	
 
 					}
@@ -219,8 +220,8 @@ public class AberrationCorrection {
 				
 				// Applycorrection
 				if (!params.demomode) {
-					REALMframe.core_.setProperty("MIRAO52E", params.Zernikes[jzern], this.Aest[jzern] / 1000);
-					REALMframe.core_.setProperty("MIRAO52E","ApplyZernikes",1);
+					REALMframe.core_.setProperty(params.DMname, params.Zernikes[jzern], this.Aest[jzern] / 1000);
+					REALMframe.core_.setProperty(params.DMname,"ApplyZernikes",1);
 				}
 
 				// Show metric values and fit
@@ -240,7 +241,8 @@ public class AberrationCorrection {
 			}						
 		}	
 
-		// Aberration correction finished. Store and show results		
+		// Aberration correction finished. Store and show results	
+		this.paramstore = params;
 		this.EstWrms = getWrms(this.Aest);
 		this.EstWrmserr = getWrmserr(this.Aest,this.Aerr);
 		
@@ -287,7 +289,7 @@ public class AberrationCorrection {
 	}
 
 	// Save data 
-	public void save(String file_path, Params params) throws Exception  {
+	public void save(String file_path) throws Exception  {
 
 		FileWriter write = new FileWriter( file_path , false);
 		PrintWriter print_line = new PrintWriter(write);
@@ -298,45 +300,45 @@ public class AberrationCorrection {
 		print_line.printf( "%s" + "%n" ,"Date: " + dateFormat.format(date));
 		print_line.printf("%s" + "%n", "" );
 		print_line.printf("%s" + "%n", "Settings");
-		print_line.printf( "%s" + "%n" ,"NA: " + Float.toString(params.NA));
-		print_line.printf( "%s" + "%n" ,"Wavelength [nm]: " + Float.toString(params.wavelength));
-		print_line.printf( "%s" + "%n" ,"Pixelsize[nm]: " + Float.toString(params.pixelsize));
-		print_line.printf( "%s" + "%n" ,"Correction rounds: " + Integer.toString(params.Nrounds));
+		print_line.printf( "%s" + "%n" ,"NA: " + Float.toString(this.paramstore.NA));
+		print_line.printf( "%s" + "%n" ,"Wavelength [nm]: " + Float.toString(this.paramstore.wavelength));
+		print_line.printf( "%s" + "%n" ,"Pixelsize[nm]: " + Float.toString(this.paramstore.pixelsize));
+		print_line.printf( "%s" + "%n" ,"Correction rounds: " + Integer.toString(this.paramstore.Nrounds));
 		print_line.printf( "%s" ,"Zernike modes: ");
-		for (int i = 0; i < params.Zernikes.length; i ++) 
-			print_line.printf("%s, ",params.Zernikes[i]);
+		for (int i = 0; i < this.paramstore.Zernikes.length; i ++) 
+			print_line.printf("%s, ",this.paramstore.Zernikes[i]);
 		print_line.printf( "%n");	
 		print_line.printf( "%s" ,"Applied biases [nm]: ");		
-		for (int i = 0; i < params.biases.length; i ++) 
-			print_line.printf("%s, ",Double.toString(params.biases[i]));
+		for (int i = 0; i < this.paramstore.biases.length; i ++) 
+			print_line.printf("%s, ",Double.toString(this.paramstore.biases[i]));
 		print_line.printf( "%n");
 		print_line.printf( "%n");
 		print_line.printf("%s" + "%n", "Aberration correction results");
-		print_line.printf( "%s" + "%n" ,"Wrms [rad]: " + Double.toString(this.EstWrms / params.wavelength * 2 * Math.PI));
-		print_line.printf( "%s" + "%n" ,"Wrms standard error [rad]: " + Double.toString(this.EstWrmserr / params.wavelength * 2 * Math.PI));
+		print_line.printf( "%s" + "%n" ,"Wrms [rad]: " + Double.toString(this.EstWrms / this.paramstore.wavelength * 2 * Math.PI));
+		print_line.printf( "%s" + "%n" ,"Wrms standard error [rad]: " + Double.toString(this.EstWrmserr / this.paramstore.wavelength * 2 * Math.PI));
 		print_line.printf( "%s" + "%n","Zernike coefficients [rad]");
 		for (int i = 0; i < this.AestStore.length; i ++) {
 			print_line.printf( "%s" ,"Round " + (i +1) + ": ");
 			for (int j = 0; j < this.AestStore[0].length; j ++) 
-				print_line.printf("%s, ",this.AestStore[i][j] / params.wavelength * 2 * Math.PI);
+				print_line.printf("%s, ",this.AestStore[i][j] / this.paramstore.wavelength * 2 * Math.PI);
 			print_line.printf( "%n");
 		}
 		print_line.printf( "%s" ,"Final: ");
 		for (int j = 0; j < this.Aest.length; j ++) 
-			print_line.printf("%s, ",this.Aest[j] / params.wavelength * 2 * Math.PI);
+			print_line.printf("%s, ",this.Aest[j] / this.paramstore.wavelength * 2 * Math.PI);
 		print_line.printf( "%n");
 		print_line.printf( "%n");
 		print_line.printf( "%s" + "%n","Standard Error of Zernike coefficients [rad]");
 		for (int i = 0; i < this.AerrStore.length; i ++) {
 			print_line.printf( "%s" ,"Round " + (i +1) + ": ");
 			for (int j = 0; j < this.AerrStore[0].length; j ++) 
-				print_line.printf("%s, ",this.AerrStore[i][j] / params.wavelength * 2 * Math.PI);
+				print_line.printf("%s, ",this.AerrStore[i][j] / this.paramstore.wavelength * 2 * Math.PI);
 			print_line.printf( "%n");
 		}
 		print_line.printf( "%n");
 		print_line.printf( "%s" + "%n","Metric values");
 		for (int i = 0; i < this.Mstore[0].length; i ++) {
-			print_line.printf( "%s" + "%n" ,"Zernike mode " + params.Zernikes[i]);
+			print_line.printf( "%s" + "%n" ,"Zernike mode " + this.paramstore.Zernikes[i]);
 			for (int j = 0; j < this.Mstore.length; j ++) {
 				print_line.printf( "%s" ,"Round " + (j +1) + ": ");
 				for (int k = 0; k < this.Mstore[0][0].length; k ++) 

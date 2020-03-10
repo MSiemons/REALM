@@ -41,6 +41,7 @@ public class Params {
 	public float alpha;
 	public boolean show;
 	public boolean demomode;
+	public String DMname;
 
 	public void update() {
 
@@ -62,6 +63,14 @@ public class Params {
 			this.Zernikes = REALMframe.ZERNLIST3;
 			this.zernindn = REALMframe.zernindn3;
 			this.zernindm = REALMframe.zernindm3;
+		} else if(Zernlist == 3) {
+			this.Zernikes = REALMframe.ZERNLIST4;
+			this.zernindn = REALMframe.zernindn4;
+			this.zernindm = REALMframe.zernindm4;
+		} else if(Zernlist == 4) {
+			this.Zernikes = REALMframe.ZERNLIST5;
+			this.zernindn = REALMframe.zernindn5;
+			this.zernindm = REALMframe.zernindm5;
 		}
 		this.Nzernikes = this.Zernikes.length;
 

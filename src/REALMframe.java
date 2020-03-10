@@ -79,12 +79,21 @@ implements MMListenerInterface {
 	final static String[] ZERNLIST3 = {"Z22","Z2-2","Z31","Z3-1","Z33","Z3-3","Z40","Z42","Z4-2","Z44","Z4-4","Z60"};
 	final static int[]	zernindn3 = {2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 6};
 	final static int[]	zernindm3 = {2,-2, 1,-1, 3,-3, 0, 2,-2, 4,-4, 0};
-	final static String[] ZERNLIST = {"Low (5 modes)","Medium (9 modes)","High (12 modes)"}; 
+	final static String[] ZERNLIST4 = {"Z40","Z60"};
+	final static int[]	zernindn4 = {4, 6,};
+	final static int[]	zernindm4 = {0, 0,};
+	final static String[] ZERNLIST5 = {"Z22","Z2-2","Z31","Z3-1","Z33","Z3-3","Z42","Z4-2"};
+	final static int[]	zernindn5 = {2, 2, 3, 3, 3, 3, 4, 4,};
+	final static int[]	zernindm5 = {2,-2, 1,-1, 3,-3, 2,-2,};
+	
+	
+	final static String[] ZERNLIST = {"Low (5 modes)","Medium (9 modes)","High (12 modes)","Z40,Z60","Z22,Z31,Z33,Z42"}; 
 	final static String demofile = "REALM/DemoAcquisitions/SMimage_Z";
 
 	private JComboBox Zernikesfield_;
 	private JComboBox Nbiasesfield_;
 	private JComboBox Nroundsfield_;
+	private JComboBox DMnamefield_;
 	private JTextField NAfield_;
 	private JTextField wavelengthfield_;
 	private JTextField maxbiasfield_;
@@ -115,13 +124,14 @@ implements MMListenerInterface {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-				
+	
 		params_.NA = (float) prefs_.getFloat("NA",(float) 1.35);
 		params_.wavelength = (float) prefs_.getFloat("wavelength",(float) 690);
 		params_.Nrounds = (int) prefs_.getInt("Nrounds",2);
 		params_.Nbiases = (int) prefs_.getInt("Nbiases",13);
 		params_.maxbiasrad = (double) prefs_.getDouble("maxbiasrad",(double) 1.0);
 		params_.Zernlist = (int) prefs_.getInt("Zernlist",1);
+		params_.DMname = (String) prefs_.get("DMname", "Core");
 		params_.show = prefs_.getBoolean("showdata", false);
 		params_.alpha = (float) 1.3;
 		params_.update();   
@@ -146,6 +156,8 @@ implements MMListenerInterface {
 	}
 
 	private void initComponents() {
+		String[] DeviceList_ = core_.getLoadedDevices().toArray();
+		
 		// Parameters 
 		NAfield_ = new JTextField(String.valueOf(params_.NA),5);      	
 		wavelengthfield_ = new JTextField(String.valueOf(params_.wavelength),5);
@@ -155,6 +167,9 @@ implements MMListenerInterface {
 		Nroundsfield_.setSelectedItem(String.valueOf(params_.Nrounds));
 		Nbiasesfield_ = new JComboBox(Nbiaseslist); 
 		Nbiasesfield_.setSelectedItem(String.valueOf(params_.Nbiases));
+		DMnamefield_ = new JComboBox(DeviceList_); 
+		DMnamefield_.setSelectedItem(String.valueOf(params_.DMname));
+		
 		maxbiasfield_ = new JTextField(String.valueOf(params_.maxbiasrad),5);
 		abcorstart_ = new JButton("START");
 		abcorstart_.setFont(new Font("Arial", Font.PLAIN, 40));
@@ -163,7 +178,7 @@ implements MMListenerInterface {
 		abcorsave_ = new JButton("Save correction data");
 		savewavefront_ = new JButton("Save wavefront");
 		loadwavefront_ = new JButton("Load wavefront");
-		applyastig_= new JButton("Apply 60nm astigmatisme");
+		applyastig_= new JButton("Apply 60nm astigmatism");
 		showdatafield_ = new JCheckBox();
 		showdatafield_.setMnemonic(KeyEvent.VK_C); 
 		showdatafield_.setSelected(params_.show);
@@ -174,6 +189,7 @@ implements MMListenerInterface {
 		filename_ = new JTextField(); 
 		dir_ = new JTextField()  ;
 		abcorresults_ = new AberrationCorrection();
+		
 
 		JTabbedPane tabbedPane = new JTabbedPane();
 
@@ -209,6 +225,8 @@ implements MMListenerInterface {
 		addcheckboxField(SHOWDATA,SHOWDATAdescript,showdatafield_, AbCorParamPanel);   
 		AbCorParamPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 		addcheckboxField(DEMOMODE,DEMOMODEdescript,demomodefield_, AbCorParamPanel);   
+		AbCorParamPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+		addcmbParameterField("DM device","DM device name",DMnamefield_, AbCorParamPanel);
 		AbCorParamPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 		AbCorParamPanel.setBorder(AbcorParamPanelbordertitle);       
 
@@ -321,6 +339,7 @@ implements MMListenerInterface {
 				params_.Nbiases = Integer.parseInt((String) Nbiasesfield_.getItemAt(Nbiasesfield_.getSelectedIndex()));
 				params_.update();
 				prefs_.putInt("Nbiases", (int) params_.Nbiases);
+				System.out.println(params_.Nbiases);
 			}
 		});	
 
@@ -345,7 +364,44 @@ implements MMListenerInterface {
 				params_.show = (e.getStateChange()==1?true:false); 
 				prefs_.putBoolean("showdata",params_.show);
 			}    
-		});  
+		}); 
+		
+		DMnamefield_.addActionListener(new java.awt.event.ActionListener() {   
+			public void actionPerformed(java.awt.event.ActionEvent e) {                 
+				String DMname =  (String) DMnamefield_.getItemAt(DMnamefield_.getSelectedIndex());
+				String[] DevicePropertyList = null;
+				try {
+					DevicePropertyList = core_.getDevicePropertyNames(DMname).toArray();
+				} catch (Exception e2) {
+					e2.printStackTrace();
+					System.out.print(e2);
+				}
+				
+				System.out.println(Arrays.toString(DevicePropertyList));
+				// Check if appropiate properties are available
+				String MisProp = new String();
+				for (int jzern = 0; jzern < params_.Nzernikes; jzern ++) {
+					if (!Arrays.asList(DevicePropertyList).contains( params_.Zernikes[jzern] )) {
+						MisProp = MisProp + params_.Zernikes[jzern] + "\n";
+					}
+				}
+				
+				if (!Arrays.asList(DevicePropertyList).contains("ApplyZernikes")) 
+					MisProp = MisProp + "ApplyZernikes\n";
+				if (!Arrays.asList(DevicePropertyList).contains("Load wavefront correction")) 
+					MisProp = MisProp + "Load wavefront correction\n";
+				if (!Arrays.asList(DevicePropertyList).contains("Save current position [input filename]")) 
+					MisProp = MisProp + "Save current position [input filename]\n";
+				
+				if (MisProp.length() > 0) {
+				JOptionPane.showMessageDialog(null,"REALM does not (fully) support this device. \nMissing properties are:\n" + MisProp, "Warning", 
+						JOptionPane.PLAIN_MESSAGE);
+				}
+				System.out.println(MisProp);
+				params_.DMname = DMname;
+				prefs_.put("DMname",DMname);
+			}    
+		}); 	
 		
 		demomodefield_.addItemListener(new java.awt.event.ItemListener() {    
 			public void itemStateChanged(java.awt.event.ItemEvent e) {  
@@ -362,8 +418,8 @@ implements MMListenerInterface {
 							return;
 						}
 					}
-				}	
-
+				}
+				
 				params_.demomode = (e.getStateChange()==1?true:false); 
 				//               System.out.println(params_.demomode);
 			}    
@@ -381,15 +437,32 @@ implements MMListenerInterface {
 					e.printStackTrace();
 				}
 				
-				// Check if MIRAO52E device is loaded
+				// Check if supported device is loaded
 				if (!params_.demomode) {
-					String[] DeviceList = core_.getLoadedDevices().toArray();
-					if (!Arrays.asList(DeviceList).contains("MIRAO52E")) {
-						JOptionPane.showMessageDialog(null,"Cannot start aberration correction: MIRAO52E not loaded. \nConsider using DEMO mode.", "Warning", 
+					String[] DevicePropertyList = null;
+					try {
+						DevicePropertyList = core_.getDevicePropertyNames(params_.DMname).toArray();
+					} catch (Exception e2) {
+						e2.printStackTrace();
+						System.out.print(e2);
+					}
+					
+					// Check if appropiate properties are available: loop over Zernike modes 
+					for (int jzern = 0; jzern < params_.Nzernikes; jzern ++) {
+						if (!Arrays.asList(DevicePropertyList).contains( params_.Zernikes[jzern] )) {
+							JOptionPane.showMessageDialog(null,"Aberration correction cannot start: DM device is not supported.", "Warning", 
+									JOptionPane.PLAIN_MESSAGE);
+						return;
+						}
+					}
+					
+					if (!Arrays.asList(DevicePropertyList).contains("ApplyZernikes")) {
+						JOptionPane.showMessageDialog(null,"Aberration correction cannot start: DM device is not supported.", "Warning", 
 								JOptionPane.PLAIN_MESSAGE);
 						return;
 					}
-				}				
+				}	
+				
 				// (in)activate start and stop buttons
 				abcorstart_.setEnabled(false);
 				abcorstop_.setEnabled(true);
@@ -432,10 +505,25 @@ implements MMListenerInterface {
 
 		applyastig_.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				// Check if MIRAO52E device is loaded
-				String[] DeviceList = core_.getLoadedDevices().toArray();
-				if (!Arrays.asList(DeviceList).contains("MIRAO52E")) {
-					JOptionPane.showMessageDialog(null,"Cannot apply astigmatism: MIRAO52E not loaded.", "Warning", 
+				// Check if proper device is loaded
+				String[] DevicePropertyList = null;
+				try {
+					DevicePropertyList = core_.getDevicePropertyNames(params_.DMname).toArray();
+				} catch (Exception e2) {
+					e2.printStackTrace();
+					System.out.print(e2);
+				}
+				
+				System.out.println(Arrays.toString(DevicePropertyList));
+				// Check if appropiate properties are available: loop over Zernike modes 
+				if (!Arrays.asList(DevicePropertyList).contains("Z22")) {
+						JOptionPane.showMessageDialog(null,"Astigmatism cannot be applied: DM device is not supported.", "Warning", 
+								JOptionPane.PLAIN_MESSAGE);
+					return;
+				}
+			
+				if (!Arrays.asList(DevicePropertyList).contains("ApplyZernikes")) {
+					JOptionPane.showMessageDialog(null,"Astigmatism cannot be applied: DM device is not supported.", "Warning", 
 							JOptionPane.PLAIN_MESSAGE);
 					return;
 				}
@@ -447,11 +535,20 @@ implements MMListenerInterface {
 		loadwavefront_.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				
-				// Check if MIRAO52E device is loaded
-				String[] DeviceList = core_.getLoadedDevices().toArray();
-				if (!Arrays.asList(DeviceList).contains("MIRAO52E")) {
-					JOptionPane.showMessageDialog(null,"Cannot load wavefront: MIRAO52E not loaded.", "Error", 
-							JOptionPane.PLAIN_MESSAGE);
+				// Check if  device has proper property
+				String[] DevicePropertyList = null;
+				try {
+					DevicePropertyList = core_.getDevicePropertyNames(params_.DMname).toArray();
+				} catch (Exception e2) {
+					e2.printStackTrace();
+					System.out.print(e2);
+				}
+				
+				System.out.println(Arrays.toString(DevicePropertyList));
+				// Check if appropiate properties are available: loop over Zernike modes 
+				if (!Arrays.asList(DevicePropertyList).contains("Load wavefront correction")) {
+						JOptionPane.showMessageDialog(null,"Cannot load wavefront: DM device does not support property \"Load wavefront correction\".", "Warning", 
+								JOptionPane.PLAIN_MESSAGE);
 					return;
 				}
 				
@@ -462,11 +559,20 @@ implements MMListenerInterface {
 		savewavefront_.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				
-				// Check if MIRAO52E device is loaded
-				String[] DeviceList = core_.getLoadedDevices().toArray();
-				if (!Arrays.asList(DeviceList).contains("MIRAO52E")) {
-					JOptionPane.showMessageDialog(null,"Cannot save wavefront: MIRAO52E not loaded.", "Error", 
-							JOptionPane.PLAIN_MESSAGE);
+				// Check if  device has proper property
+				String[] DevicePropertyList = null;
+				try {
+					DevicePropertyList = core_.getDevicePropertyNames(params_.DMname).toArray();
+				} catch (Exception e2) {
+					e2.printStackTrace();
+					System.out.print(e2);
+				}
+				
+				System.out.println(Arrays.toString(DevicePropertyList));
+				// Check if appropiate properties are available: loop over Zernike modes 
+				if (!Arrays.asList(DevicePropertyList).contains("Save current position [input filename]")) {
+						JOptionPane.showMessageDialog(null,"Cannot save wavefront: DM device does not support property \"Save current position [input filename]\".", "Warning", 
+								JOptionPane.PLAIN_MESSAGE);
 					return;
 				}
 				
@@ -497,8 +603,8 @@ implements MMListenerInterface {
 		try {
 			for (int jzern = 0; jzern < params_.Nzernikes; jzern ++) {   			 
 				if (!params_.demomode) {
-					core_.setProperty("MIRAO52E", params_.Zernikes[jzern], 0);
-					core_.setProperty("MIRAO52E","ApplyZernikes",1);
+					core_.setProperty(params_.DMname, params_.Zernikes[jzern], 0);
+					core_.setProperty(params_.DMname,"ApplyZernikes",1);
 				}
 			}
 		} catch (Exception e) {
@@ -530,7 +636,7 @@ implements MMListenerInterface {
 			prefs_.put("directory", c.getCurrentDirectory().toString());	
 
 			try {	
-				abcorresults_.save(savestring, params_);
+				abcorresults_.save(savestring);
 				JOptionPane.showMessageDialog(null, savestring,"File saved",	JOptionPane.PLAIN_MESSAGE);	
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null,e.getMessage(), "Error", JOptionPane.PLAIN_MESSAGE);
@@ -543,14 +649,14 @@ implements MMListenerInterface {
 	};  
 
 	private void applyastig_actionperformed(java.awt.event.ActionEvent evt){
-		System.out.println("Astigmatisme applied");		
+		System.out.println("Astigmatism applied");		
 		try {    		 
-			double astigcurrent = Double.valueOf(core_.getProperty("MIRAO52E","Z22"));
+			double astigcurrent = Double.valueOf(core_.getProperty(params_.DMname,"Z22"));
 			double astignew = astigcurrent + 0.060;
 			System.out.println(astigcurrent);
 			System.out.println(astignew);
-			REALMframe.core_.setProperty("MIRAO52E", "Z22",astignew);
-			REALMframe.core_.setProperty("MIRAO52E","ApplyZernikes",1);
+			REALMframe.core_.setProperty(params_.DMname, "Z22",astignew);
+			REALMframe.core_.setProperty(params_.DMname,"ApplyZernikes",1);
 
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null,e.getMessage(), "Error", JOptionPane.PLAIN_MESSAGE);;
@@ -572,7 +678,7 @@ implements MMListenerInterface {
 			System.out.println(loadstring);
 
 			try { 
-				REALMframe.core_.setProperty("MIRAO52E","Load wavefront correction", loadstring);  		 	  	    		  
+				REALMframe.core_.setProperty(params_.DMname,"Load wavefront correction", loadstring);  		 	  	    		  
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null,e.getMessage(), "Error", JOptionPane.PLAIN_MESSAGE);;
 			}	
@@ -594,7 +700,7 @@ implements MMListenerInterface {
 			prefs_.put("directory", c.getCurrentDirectory().toString());
 			
 			try { 
-				REALMframe.core_.setProperty("MIRAO52E","Save current position [input filename]", savestring);
+				REALMframe.core_.setProperty(params_.DMname,"Save current position [input filename]", savestring);
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null,e.getMessage(), "Error", JOptionPane.PLAIN_MESSAGE);;
 			}
