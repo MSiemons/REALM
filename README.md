@@ -32,3 +32,8 @@ REALM uses model-based optimization to iteratively correct Zernike modes. In bri
    <div align="center">
     <img src="/img/AberrationCorrectionMethod.png" width="800px"</img> 
 </div>
+
+##  Citing
+If you use REALM, our a derivative, please cite our paper
+
+Siemons, M.E., Hanemaaijer, N.A.K., Kole, M.H.P. et al. Robust adaptive optics for localization microscopy deep in complex tissue. Nat Commun 12, 3407 (2021). https://doi.org/10.1038/s41467-021-23647-2
